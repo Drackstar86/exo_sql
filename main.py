@@ -11,17 +11,16 @@ db_config = {
 
 
 def clean_text(text):
-    """ Nettoie et met en majuscules """
-
-    if text:
-        return " ".join(text.split()).upper()
-    return None
+    """ Nettoie et met en majuscules. Retourne None si vide ou juste des espaces. """
+    if not text: return None
+    cleaned = " ".join(text.split()).upper()
+    return cleaned if cleaned else None
 
 def clean_address(text):
-    """Nettoie et met en forme les adresses en mettant une majuscule à chaque mot et en supprimant les doubles espaces."""
-    if text:
-        return " ".join(text.split()).title()
-    return None
+    """ Idem pour l'adresse """
+    if not text: return None
+    cleaned = " ".join(text.split()).title()
+    return cleaned if cleaned else None
 
 def make_loc_signature(lat, lon):
     """ Crée les signatures de localisation pour le mapping """
@@ -89,11 +88,19 @@ def run_import(file_path):
 
             for row in reader:
 
-                # Titres des films, types de tournage, réalisateurs et producteurs
-                if row.get('Titre'): set_title.add(" ".join(row['Titre'].split()))
-                if row.get('Type de tournage'): set_type.add(clean_text(row['Type de tournage']))
-                if row.get('Réalisateur'): set_real.add(clean_text(row['Réalisateur']))
-                if row.get('Producteur'): set_prod.add(clean_text(row['Producteur']))
+                # Titres & Types (On stocke le résultat propre dans une variable)
+                t_val = " ".join(row['Titre'].split()) if row.get('Titre') else None
+                if t_val: set_title.add(t_val)
+
+                type_val = clean_text(row.get('Type de tournage'))
+                if type_val: set_type.add(type_val)
+
+                # Réalisateurs & Producteurs : On vérifie que ce n'est pas None avant d'ajouter
+                real_val = clean_text(row.get('Réalisateur'))
+                if real_val: set_real.add(real_val)
+
+                prod_val = clean_text(row.get('Producteur'))
+                if prod_val: set_prod.add(prod_val)
 
                 # Mise en forme du json des coordonnées
                 pt = row.get('geo_point_2d')
